@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VocabCraft - Smart Vocabulary & Writing Practice</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 4px; }
+    </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 flex flex-col">
+
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
+                        <i class="fa-solid fa-book-bookmark text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-xl leading-none bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">VocabCraft</h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Learn, Compare & Master Words</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Desktop) -->
+                <nav class="hidden md:flex space-x-1 bg-slate-100 dark:bg-slate-700/50 p-1 rounded-xl">
+                    <button onclick="switchTab('wordbank')" id="nav-wordbank" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm">
+                        <i class="fa-solid fa-layer-group mr-2"></i>Word Bank
+                    </button>
+                    <button onclick="switchTab('practice')" id="nav-practice" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all">
+                        <i class="fa-solid fa-graduation-cap mr-2"></i>Practice Quiz
+                    </button>
+                    <button onclick="switchTab('dictionary')" id="nav-dictionary" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all">
+                        <i class="fa-solid fa-magnifying-glass mr-2"></i>Dictionary
+                    </button>
+                </nav>
+
+                <!-- Actions: Theme Toggle & Word Count Stats -->
+                <div class="flex items-center space-x-3">
+                    <button id="apiKeyToggle" onclick="openApiKeyModal()" class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="AI Settings (API Key)">
+                        <i class="fa-solid fa-key text-lg"></i>
+                    </button>
+                    <button id="themeToggle" onclick="toggleTheme()" class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Toggle Theme">
+                        <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+                        <i class="fa-solid fa-sun hidden dark:block text-lg"></i>
+                    </button>
+                    <div class="hidden sm:flex items-center bg-blue-50 dark:bg-slate-700/50 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-slate-600">
+                        <i class="fa-solid fa-layer-group text-blue-500 mr-2"></i>
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">Words: <span id="totalWordCount">0</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div class="md:hidden flex border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+            <button onclick="switchTab('wordbank')" id="mob-nav-wordbank" class="mob-tab-btn flex-1 py-3 text-center text-xs font-semibold text-blue-600 border-b-2 border-blue-600">
+                <i class="fa-solid fa-layer-group block text-base mb-1"></i>Bank
+            </button>
+            <button onclick="switchTab('practice')" id="mob-nav-practice" class="mob-tab-btn flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent">
+                <i class="fa-solid fa-graduation-cap block text-base mb-1"></i>Practice
+            </button>
+            <button onclick="switchTab('dictionary')" id="mob-nav-dictionary" class="mob-tab-btn flex-1 py-3 text-center text-xs font-semibold text-slate-500 border-b-2 border-transparent">
+                <i class="fa-solid fa-magnifying-glass block text-base mb-1"></i>Lookup
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <section id="tab-wordbank" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Word Input Card -->
+                <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 h-fit">
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center">
+                        <i class="fa-solid fa-plus-circle text-blue-600 mr-2"></i>Add Words
+                    </h2>
+
+                    <!-- Mode Toggle (Single vs Batch) -->
+                    <div class="flex p-1 bg-slate-100 dark:bg-slate-700/50 rounded-lg mb-4">
+                        <button onclick="setAddMode('single')" id="mode-single-btn" class="flex-1 py-1.5 text-xs font-semibold rounded-md bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400">Single Word</button>
+                        <button onclick="setAddMode('batch')" id="mode-batch-btn" class="flex-1 py-1.5 text-xs font-semibold rounded-md text-slate-600 dark:text-slate-400">Batch / Multiple</button>
+                    </div>
+
+                    <!-- Single Word Form -->
+                    <form id="singleWordForm" onsubmit="handleAddSingleWord(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Word</label>
+                            <input type="text" id="inputWord" required placeholder="e.g. Ephemeral" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Your Definition (Optional)</label>
+                            <textarea id="inputDef" rows="3" placeholder="What does this word mean to you?" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition resize-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition text-sm flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-arrow-down-to-line"></i>
+                            <span>Save to Word Bank</span>
+                        </button>
+                    </form>
+
+                    <!-- Batch Words Form -->
+                    <form id="batchWordForm" onsubmit="handleAddBatchWords(event)" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Multiple Words (Comma or line separated)</label>
+                            <textarea id="batchInput" rows="5" placeholder="resilient, pragmatic, ubiquitous&#10;or one word per line..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition resize-none"></textarea>
+                        </div>
+                        <p class="text-xs text-slate-400">Custom definitions can be added or edited anytime after import.</p>
+                        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition text-sm flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-list-check"></i>
+                            <span>Add All Words</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Word Bank List Card -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col h-[600px]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-100 dark:border-slate-700">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Your Word Bank</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Manage saved vocabulary & compare definitions</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="searchFilter" oninput="renderWordBank()" placeholder="Search words..." class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-xs focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-48">
+                            <button onclick="clearAllWords()" class="px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition" title="Clear All Words">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Word List Scroll Container -->
+                    <div id="wordListContainer" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-1">
+                        <!-- Dynamic Word Items Render Here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-practice" class="tab-content space-y-6 hidden">
+            <div class="max-w-3xl mx-auto space-y-6">
+                <!-- Practice Header / Controls -->
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center">
+                            <i class="fa-solid fa-brain text-blue-600 mr-2"></i>Vocabulary Quiz & Writing
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Test your memory & construct sentences for automated feedback</p>
+                    </div>
+                    <button onclick="drawRandomWord()" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-shuffle"></i>
+                        <span>Draw Next Word</span>
+                    </button>
+                </div>
+
+                <!-- Empty State for Practice Mode -->
+                <div id="practiceEmptyState" class="bg-white dark:bg-slate-800 p-12 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-center">
+                    <div class="w-16 h-16 bg-blue-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400 text-2xl">
+                        <i class="fa-solid fa-cards-blank"></i>
+                    </div>
+                    <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-1">Word Bank is Empty</h3>
+                    <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">Add at least 1 word to your Word Bank to start practicing and generating sentence checks.</p>
+                    <button onclick="switchTab('wordbank')" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg hover:bg-slate-200 transition">Go to Word Bank</button>
+                </div>
+
+                <!-- Active Quiz Container -->
+                <div id="practiceCard" class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden hidden">
+                    <!-- Word Header -->
+                    <div class="bg-slate-900 text-white p-6 sm:p-8 relative">
+                        <span class="text-xs font-semibold tracking-wider uppercase text-blue-400 bg-blue-950/60 border border-blue-800/60 px-3 py-1 rounded-full">Practice Target</span>
+                        <h3 id="quizWordTitle" class="text-3xl font-extrabold mt-3 tracking-tight">---</h3>
+                        <div id="quizPhonetic" class="text-sm text-slate-400 mt-1 italic"></div>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+                        <!-- Step 1: Definition Recall -->
+                        <div class="space-y-3">
+                            <label class="block text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                1. What does this word mean?
+                            </label>
+                            <textarea id="userRecallDef" rows="2" placeholder="Write down your definition from memory..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition resize-none"></textarea>
+                            <button onclick="revealDefinitions()" class="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center space-x-1">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Reveal Custom & Dictionary Definitions</span>
+                            </button>
+                        </div>
+
+                        <!-- Comparison Cards (Revealed) -->
+                        <div id="quizComparisonArea" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+                            <div class="p-4 rounded-xl bg-blue-50/60 dark:bg-slate-700/40 border border-blue-100 dark:border-slate-600">
+                                <span class="text-xs font-bold text-blue-700 dark:text-blue-300 block mb-1">Your Custom Saved Definition</span>
+                                <p id="quizCustomDef" class="text-sm text-slate-700 dark:text-slate-200">None provided</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-indigo-50/60 dark:bg-slate-700/40 border border-indigo-100 dark:border-slate-600">
+                                <span class="text-xs font-bold text-indigo-700 dark:text-indigo-300 block mb-1">Official Oxford / Dictionary Entry</span>
+                                <p id="quizDictDef" class="text-sm text-slate-700 dark:text-slate-200">Loading dictionary...</p>
+                                <span id="quizPosBadge" class="inline-block mt-2 text-[10px] uppercase tracking-wider font-bold bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-0.5 rounded"></span>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Sentence Creation & AI Check -->
+                        <div class="space-y-3 border-t border-slate-100 dark:border-slate-700 pt-6">
+                            <label class="block text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                2. Use <span id="quizWordInline" class="text-blue-600 font-bold"></span> in a sentence:
+                            </label>
+                            <textarea id="userSentence" rows="3" placeholder="Type a realistic sentence using the word..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition resize-none"></textarea>
+                            
+                            <button id="checkSentenceBtn" onclick="evaluateSentence()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-xl shadow-md transition text-sm flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <span>Check Grammar, Spelling & Context</span>
+                            </button>
+                        </div>
+
+                        <!-- Sentence AI Evaluation Result -->
+                        <div id="aiFeedbackResult" class="hidden rounded-xl border p-5 transition space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold text-sm flex items-center space-x-2">
+                                    <i id="feedbackIcon" class="fa-solid text-lg"></i>
+                                    <span>Grammar & Context Analysis</span>
+                                </h4>
+                                <span id="feedbackScore" class="px-2.5 py-1 text-xs font-bold rounded-full">Score: -</span>
+                            </div>
+                            <p id="feedbackText" class="text-sm leading-relaxed"></p>
+                            <div id="feedbackSuggestions" class="text-xs bg-white/50 dark:bg-slate-900/40 p-3 rounded-lg border border-slate-200/50 dark:border-slate-700/50 hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-dictionary" class="tab-content space-y-6 hidden">
+            <div class="max-w-3xl mx-auto space-y-6">
+                <!-- Lookup Search Box -->
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center">
+                        <i class="fa-solid fa-magnifying-glass text-blue-600 mr-2"></i>Dictionary Lookup & Comparison
+                    </h2>
+                    <form onsubmit="handleDictionarySearch(event)" class="flex gap-2">
+                        <input type="text" id="dictSearchInput" placeholder="Enter word to search (e.g., Eloquent)" required class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-md transition text-sm flex items-center space-x-2">
+                            <i class="fa-solid fa-search"></i>
+                            <span>Search</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Dictionary Result Display -->
+                <div id="dictSearchResult" class="hidden bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700">
+                        <div>
+                            <h3 id="dictResultWord" class="text-2xl font-bold text-slate-900 dark:text-white">---</h3>
+                            <div class="flex items-center space-x-3 mt-1">
+                                <span id="dictResultPhonetic" class="text-sm text-slate-500 italic"></span>
+                                <button id="dictAudioBtn" class="hidden text-blue-600 hover:text-blue-700 p-1" title="Listen Audio">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button id="addSearchResultBtn" class="px-3.5 py-2 bg-blue-50 dark:bg-slate-700 hover:bg-blue-100 dark:hover:bg-slate-600 text-blue-600 dark:text-blue-300 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Save to Word Bank</span>
+                        </button>
+                    </div>
+
+                    <!-- Side-by-side or stacked definitions comparison -->
+                    <div id="dictMeaningsContainer" class="space-y-4">
+                        <!-- Dynamically Populated Meanings & Parts of Speech -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="editModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl p-6 shadow-xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Edit Word Definition</h3>
+            <div>
+                <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Word</label>
+                <input type="text" id="editWordInput" disabled class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 text-sm font-semibold">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your Custom Definition</label>
+                <textarea id="editDefInput" rows="4" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none"></textarea>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeEditModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">Cancel</button>
+                <button onclick="saveEditModal()" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl p-6 shadow-xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                <i class="fa-solid fa-key text-blue-600"></i>
+                <span>Gemini API Key (Optional)</span>
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                Enter an optional Google Gemini API Key to enable advanced AI sentence evaluation. If left blank or offline, VocabCraft uses a built-in grammar & spelling checker.
+            </p>
+            <div>
+                <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">API Key</label>
+                <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeApiKeyModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">Cancel</button>
+                <button onclick="saveApiKeyModal()" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md">Save Key</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'vocabcraft_words_v1';
+        let words = [];
+        let currentQuizWord = null;
+
+        function openApiKeyModal() {
+            document.getElementById('apiKeyInput').value = localStorage.getItem('gemini_api_key') || '';
+            document.getElementById('apiKeyModal').classList.remove('hidden');
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.add('hidden');
+        }
+
+        function saveApiKeyModal() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (key) {
+                localStorage.setItem('gemini_api_key', key);
+            } else {
+                localStorage.removeItem('gemini_api_key');
+            }
+            closeApiKeyModal();
+        }
+
+        // Load words on startup
+        function initApp() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    words = JSON.parse(saved);
+                } catch(e) {
+                    words = getSampleWords();
+                }
+            } else {
+                words = getSampleWords();
+                saveWordsToStorage();
+            }
+            renderWordBank();
+            updateStats();
+        }
+
+        function getSampleWords() {
+            return [
+                { id: '1', word: 'Ephemeral', customDef: 'Lasting for a very short time.', createdAt: Date.now() },
+                { id: '2', word: 'Pragmatic', customDef: 'Dealing with things sensibly and realistically based on practical considerations.', createdAt: Date.now() - 1000 },
+                { id: '3', word: 'Resilient', customDef: 'Able to withstand or recover quickly from difficult conditions.', createdAt: Date.now() - 2000 }
+            ];
+        }
+
+        function saveWordsToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalWordCount').textContent = words.length;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            // Update desktop tabs styling
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-blue-600', 'dark:text-blue-400', 'bg-white', 'dark:bg-slate-800', 'shadow-sm');
+                btn.classList.add('text-slate-600', 'dark:text-slate-300');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.add('text-blue-600', 'dark:text-blue-400', 'bg-white', 'dark:bg-slate-800', 'shadow-sm');
+                activeNav.classList.remove('text-slate-600', 'dark:text-slate-300');
+            }
+
+            // Update mobile tabs
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.classList.remove('text-blue-600', 'border-blue-600');
+                btn.classList.add('text-slate-500', 'border-transparent');
+            });
+            const activeMobNav = document.getElementById(`mob-nav-${tabId}`);
+            if (activeMobNav) {
+                activeMobNav.classList.add('text-blue-600', 'border-blue-600');
+                activeMobNav.classList.remove('text-slate-500', 'border-transparent');
+            }
+
+            if (tabId === 'practice' && (!currentQuizWord || !words.find(w => w.id === currentQuizWord.id))) {
+                drawRandomWord();
+            }
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function setAddMode(mode) {
+            const singleForm = document.getElementById('singleWordForm');
+            const batchForm = document.getElementById('batchWordForm');
+            const singleBtn = document.getElementById('mode-single-btn');
+            const batchBtn = document.getElementById('mode-batch-btn');
+
+            if (mode === 'single') {
+                singleForm.classList.remove('hidden');
+                batchForm.classList.add('hidden');
+                singleBtn.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-blue-600', 'dark:text-blue-400');
+                batchBtn.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-blue-600', 'dark:text-blue-400');
+            } else {
+                singleForm.classList.add('hidden');
+                batchForm.classList.remove('hidden');
+                batchBtn.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-blue-600', 'dark:text-blue-400');
+                singleBtn.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-blue-600', 'dark:text-blue-400');
+            }
+        }
+
+        function handleAddSingleWord(e) {
+            e.preventDefault();
+            const wordInput = document.getElementById('inputWord');
+            const defInput = document.getElementById('inputDef');
+            
+            const rawWord = wordInput.value.trim();
+            if (!rawWord) return;
+
+            // Prevent duplicate case-insensitive
+            const existing = words.find(w => w.word.toLowerCase() === rawWord.toLowerCase());
+            if (existing) {
+                existing.customDef = defInput.value.trim() || existing.customDef;
+            } else {
+                words.unshift({
+                    id: Date.now().toString(),
+                    word: rawWord,
+                    customDef: defInput.value.trim(),
+                    createdAt: Date.now()
+                });
+            }
+
+            saveWordsToStorage();
+            renderWordBank();
+            wordInput.value = '';
+            defInput.value = '';
+        }
+
+        function handleAddBatchWords(e) {
+            e.preventDefault();
+            const batchInput = document.getElementById('batchInput');
+            const rawText = batchInput.value.trim();
+            if (!rawText) return;
+
+            // Split by comma or newline
+            const parsedWords = rawText.split(/[\n,]+/).map(w => w.trim()).filter(w => w.length > 0);
+            
+            let addedCount = 0;
+            parsedWords.forEach(w => {
+                const exists = words.find(item => item.word.toLowerCase() === w.toLowerCase());
+                if (!exists) {
+                    words.unshift({
+                        id: (Date.now() + Math.random()).toString(),
+                        word: w,
+                        customDef: '',
+                        createdAt: Date.now()
+                    });
+                    addedCount++;
+                }
+            });
+
+            saveWordsToStorage();
+            renderWordBank();
+            batchInput.value = '';
+        }
+
+        function deleteWord(id) {
+            words = words.filter(w => w.id !== id);
+            saveWordsToStorage();
+            renderWordBank();
+        }
+
+        function clearAllWords() {
+            if (words.length === 0) return;
+            if (confirm('Are you sure you want to clear all words from your Word Bank?')) {
+                words = [];
+                saveWordsToStorage();
+                renderWordBank();
+            }
+        }
+
+        let editingWordId = null;
+
+        function openEditModal(id) {
+            const wordObj = words.find(w => w.id === id);
+            if (!wordObj) return;
+            editingWordId = id;
+            document.getElementById('editWordInput').value = wordObj.word;
+            document.getElementById('editDefInput').value = wordObj.customDef || '';
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            editingWordId = null;
+        }
+
+        function saveEditModal() {
+            if (!editingWordId) return;
+            const wordObj = words.find(w => w.id === editingWordId);
+            if (wordObj) {
+                wordObj.customDef = document.getElementById('editDefInput').value.trim();
+                saveWordsToStorage();
+                renderWordBank();
+            }
+            closeEditModal();
+        }
+
+        function renderWordBank() {
+            const container = document.getElementById('wordListContainer');
+            const filterText = document.getElementById('searchFilter').value.toLowerCase();
+
+            const filteredWords = words.filter(w => w.word.toLowerCase().includes(filterText));
+
+            if (filteredWords.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2"></i>
+                        <p class="text-xs">No words found in your bank.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredWords.map(w => `
+                <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <h3 class="font-bold text-slate-900 dark:text-white text-base">${escapeHtml(w.word)}</h3>
+                            <button onclick="quickLookup('${escapeHtml(w.word)}')" class="text-slate-400 hover:text-blue-600 text-xs px-1.5 py-0.5 rounded" title="Search Oxford Dictionary">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-300">
+                            ${w.customDef ? escapeHtml(w.customDef) : '<span class="italic text-slate-400">No custom definition added</span>'}
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-2 self-end sm:self-center">
+                        <button onclick="openEditModal('${w.id}')" class="p-2 text-xs text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition" title="Edit Definition">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteWord('${w.id}')" class="p-2 text-xs text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition" title="Delete Word">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        async function fetchDictionaryEntry(word) {
+            try {
+                const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+                if (!res.ok) return null;
+                const data = await res.json();
+                return data[0] || null;
+            } catch (err) {
+                console.error("Dictionary API error:", err);
+                return null;
+            }
+        }
+
+        function quickLookup(word) {
+            document.getElementById('dictSearchInput').value = word;
+            switchTab('dictionary');
+            handleDictionarySearch(new Event('submit'));
+        }
+
+        async function handleDictionarySearch(e) {
+            e?.preventDefault();
+            const query = document.getElementById('dictSearchInput').value.trim();
+            if (!query) return;
+
+            const resultContainer = document.getElementById('dictSearchResult');
+            const meaningsContainer = document.getElementById('dictMeaningsContainer');
+
+            resultContainer.classList.remove('hidden');
+            meaningsContainer.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Fetching Oxford / Dictionary definition...</div>`;
+
+            const entry = await fetchDictionaryEntry(query);
+
+            if (!entry) {
+                meaningsContainer.innerHTML = `
+                    <div class="text-center py-8 text-rose-500 text-xs">
+                        <i class="fa-solid fa-circle-exclamation text-xl mb-2"></i>
+                        <p>No official dictionary entry found for "<strong>${escapeHtml(query)}</strong>".</p>
+                    </div>
+                `;
+                document.getElementById('dictResultWord').textContent = query;
+                document.getElementById('dictResultPhonetic').textContent = '';
+                document.getElementById('dictAudioBtn').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('dictResultWord').textContent = entry.word;
+            document.getElementById('dictResultPhonetic').textContent = entry.phonetic || (entry.phonetics.find(p => p.text)?.text) || '';
+
+            // Handle Audio Pronunciation
+            const audioObj = entry.phonetics?.find(p => p.audio && p.audio.length > 0);
+            const audioBtn = document.getElementById('dictAudioBtn');
+            if (audioObj && audioObj.audio) {
+                audioBtn.classList.remove('hidden');
+                audioBtn.onclick = () => {
+                    new Audio(audioObj.audio).play();
+                };
+            } else {
+                audioBtn.classList.add('hidden');
+            }
+
+            // Save word trigger button setup
+            const addBtn = document.getElementById('addSearchResultBtn');
+            addBtn.onclick = () => {
+                const firstDef = entry.meanings[0]?.definitions[0]?.definition || '';
+                const existing = words.find(w => w.word.toLowerCase() === entry.word.toLowerCase());
+                if (!existing) {
+                    words.unshift({
+                        id: Date.now().toString(),
+                        word: entry.word,
+                        customDef: firstDef,
+                        createdAt: Date.now()
+                    });
+                    saveWordsToStorage();
+                    renderWordBank();
+                    alert(`"${entry.word}" added to your Word Bank!`);
+                } else {
+                    alert(`"${entry.word}" is already in your Word Bank.`);
+                }
+            };
+
+            // Render Parts of Speech & Definitions Comparison
+            const customSaved = words.find(w => w.word.toLowerCase() === entry.word.toLowerCase());
+
+            meaningsContainer.innerHTML = `
+                ${customSaved ? `
+                    <div class="p-4 rounded-xl bg-blue-50 dark:bg-slate-700/50 border border-blue-100 dark:border-slate-600">
+                        <span class="text-xs font-bold text-blue-700 dark:text-blue-300 block mb-1"><i class="fa-solid fa-bookmark mr-1"></i>Your Saved Custom Definition</span>
+                        <p class="text-xs text-slate-700 dark:text-slate-200">${escapeHtml(customSaved.customDef || 'No custom definition provided.')}</p>
+                    </div>
+                ` : ''}
+
+                ${entry.meanings.map(meaning => `
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold uppercase tracking-wider bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-2.5 py-0.5 rounded-md">
+                                ${escapeHtml(meaning.partOfSpeech)}
+                            </span>
+                        </div>
+                        <ul class="list-disc list-inside text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                            ${meaning.definitions.slice(0, 3).map(def => `
+                                <li class="leading-relaxed"><span class="font-medium text-slate-800 dark:text-slate-100">${escapeHtml(def.definition)}</span>
+                                ${def.example ? `<span class="block ml-4 italic text-slate-400">Ex: "${escapeHtml(def.example)}"</span>` : ''}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        async function drawRandomWord() {
+            const emptyState = document.getElementById('practiceEmptyState');
+            const card = document.getElementById('practiceCard');
+
+            if (words.length === 0) {
+                emptyState.classList.remove('hidden');
+                card.classList.add('hidden');
+                currentQuizWord = null;
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            card.classList.remove('hidden');
+
+            // Pick random word
+            const randomIndex = Math.floor(Math.random() * words.length);
+            currentQuizWord = words[randomIndex];
+
+            // Reset interface state
+            document.getElementById('quizWordTitle').textContent = currentQuizWord.word;
+            document.getElementById('quizWordInline').textContent = currentQuizWord.word;
+            document.getElementById('userRecallDef').value = '';
+            document.getElementById('userSentence').value = '';
+            document.getElementById('quizComparisonArea').classList.add('hidden');
+            document.getElementById('aiFeedbackResult').classList.add('hidden');
+            document.getElementById('quizPhonetic').textContent = '';
+
+            // Asynchronously fetch Oxford dictionary definition for quiz comparison
+            document.getElementById('quizDictDef').textContent = 'Loading official dictionary entry...';
+            document.getElementById('quizPosBadge').textContent = '';
+
+            const entry = await fetchDictionaryEntry(currentQuizWord.word);
+            if (entry) {
+                const firstMeaning = entry.meanings[0];
+                const firstDef = firstMeaning?.definitions[0]?.definition || 'No dictionary definition found.';
+                document.getElementById('quizDictDef').textContent = firstDef;
+                document.getElementById('quizPosBadge').textContent = firstMeaning?.partOfSpeech || '';
+                document.getElementById('quizPhonetic').textContent = entry.phonetic || '';
+            } else {
+                document.getElementById('quizDictDef').textContent = 'Could not fetch dictionary entry.';
+            }
+        }
+
+        function revealDefinitions() {
+            if (!currentQuizWord) return;
+            document.getElementById('quizCustomDef').textContent = currentQuizWord.customDef || 'No custom definition saved in your bank.';
+            document.getElementById('quizComparisonArea').classList.remove('hidden');
+        }
+
+        function evaluateSentenceLocally(sentence, targetWord) {
+            const trimmed = sentence.trim();
+            let score = 100;
+            let suggestions = [];
+            let summaryParts = [];
+
+            const lowerWord = targetWord.toLowerCase();
+            const wordRegex = new RegExp(`\\b${lowerWord}(s|ed|ing|es)?\\b`, 'i');
+            const wordPresent = wordRegex.test(trimmed);
+
+            if (!wordPresent) {
+                score -= 40;
+                suggestions.push(`Make sure to include the target word "${targetWord}" in your sentence.`);
+            } else {
+                summaryParts.push(`Great job including "${targetWord}"!`);
+            }
+
+            if (trimmed.length > 0 && trimmed[0] !== trimmed[0].toUpperCase()) {
+                score -= 10;
+                suggestions.push("Capitalize the first letter of your sentence.");
+            }
+
+            if (!/[.!?]$/.test(trimmed)) {
+                score -= 10;
+                suggestions.push("End your sentence with proper punctuation (period, exclamation point, or question mark).");
+            }
+
+            const wordCount = trimmed.split(/\s+/).length;
+            if (wordCount < 4) {
+                score -= 25;
+                suggestions.push("Try writing a slightly longer sentence (4+ words) to provide better context.");
+            }
+
+            const repeatedMatch = trimmed.match(/\b(\w+)\s+\1\b/i);
+            if (repeatedMatch) {
+                score -= 15;
+                suggestions.push(`Watch out for repeated words ("${repeatedMatch[1]}").`);
+            }
+
+            score = Math.max(0, score);
+
+            let summary = "";
+            if (score >= 85) {
+                summary = `Excellent sentence structure! ${summaryParts.join(" ")} Capitalization, punctuation, and target word usage look good.`;
+            } else if (score >= 60) {
+                summary = `Good effort! You used the word, but there are a few areas to improve in sentence structure or mechanics.`;
+            } else {
+                summary = `Needs revision. Review the suggestions below to improve capitalization, punctuation, and word placement.`;
+            }
+
+            return {
+                score: score,
+                isCorrect: score >= 70,
+                summary: summary,
+                suggestions: suggestions.length > 0 ? suggestions.join(" ") : "No issues found!"
+            };
+        }
+
+        async function evaluateSentence() {
+            if (!currentQuizWord) return;
+            const sentence = document.getElementById('userSentence').value.trim();
+            
+            if (!sentence) {
+                alert('Please enter a sentence to evaluate.');
+                return;
+            }
+
+            const checkBtn = document.getElementById('checkSentenceBtn');
+            const feedbackResult = document.getElementById('aiFeedbackResult');
+            const feedbackText = document.getElementById('feedbackText');
+            const feedbackScore = document.getElementById('feedbackScore');
+            const feedbackSuggestions = document.getElementById('feedbackSuggestions');
+            const feedbackIcon = document.getElementById('feedbackIcon');
+
+            checkBtn.disabled = true;
+            checkBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>Evaluating Grammar & Context...`;
+
+            const userApiKey = localStorage.getItem('gemini_api_key') || '';
+            let analysis = null;
+
+            if (userApiKey) {
+                const systemPrompt = `You are an expert English language tutor evaluating a student's sentence. 
+Analyze the user's sentence for:
+1. Proper usage and context of the target vocabulary word: "${currentQuizWord.word}".
+2. Grammar, spelling, punctuation, and sentence mechanics.
+
+Return a JSON object matching this exact structure:
+{
+  "score": 95,
+  "isCorrect": true,
+  "summary": "Clear, concise assessment summary.",
+  "suggestions": "Specific feedback or corrected version if applicable."
+}`;
+
+                const userQuery = `Target Word: "${currentQuizWord.word}"\nUser Sentence: "${sentence}"`;
+
+                try {
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${userApiKey}`;
+                    const payload = {
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                        generationConfig: { responseMimeType: "application/json" }
+                    };
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (jsonText) {
+                            analysis = JSON.parse(jsonText);
+                        }
+                    } else {
+                        console.warn(`Gemini API returned status ${response.status}. Using local grammar checker.`);
+                    }
+                } catch (err) {
+                    console.warn("API evaluation error, falling back to local checker:", err);
+                }
+            }
+
+            // Fallback to local analyzer if API key is not present or API call fails
+            if (!analysis) {
+                analysis = evaluateSentenceLocally(sentence, currentQuizWord.word);
+            }
+
+            // Render Feedback Result UI
+            feedbackResult.classList.remove('hidden', 'bg-emerald-50', 'bg-rose-50', 'bg-amber-50', 'border-emerald-200', 'border-rose-200', 'border-amber-200', 'dark:bg-emerald-950/40', 'dark:bg-rose-950/40', 'dark:bg-amber-950/40');
+
+            if (analysis.score >= 85) {
+                feedbackResult.classList.add('bg-emerald-50', 'border-emerald-200', 'dark:bg-emerald-950/40');
+                feedbackIcon.className = 'fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400';
+                feedbackScore.className = 'px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
+            } else if (analysis.score >= 60) {
+                feedbackResult.classList.add('bg-amber-50', 'border-amber-200', 'dark:bg-amber-950/40');
+                feedbackIcon.className = 'fa-solid fa-triangle-exclamation text-amber-600 dark:text-amber-400';
+                feedbackScore.className = 'px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
+            } else {
+                feedbackResult.classList.add('bg-rose-50', 'border-rose-200', 'dark:bg-rose-950/40');
+                feedbackIcon.className = 'fa-solid fa-circle-xmark text-rose-600 dark:text-rose-400';
+                feedbackScore.className = 'px-2.5 py-1 text-xs font-bold rounded-full bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200';
+            }
+
+            feedbackScore.textContent = `Score: ${analysis.score}/100`;
+            feedbackText.textContent = analysis.summary;
+
+            if (analysis.suggestions) {
+                feedbackSuggestions.classList.remove('hidden');
+                feedbackSuggestions.innerHTML = `<strong>Feedback / Suggestions:</strong> ${escapeHtml(analysis.suggestions)}`;
+            } else {
+                feedbackSuggestions.classList.add('hidden');
+            }
+
+            checkBtn.disabled = false;
+            checkBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i><span>Check Grammar, Spelling & Context</span>`;
+        }
+
+        // Initialize App on DOM Content Loaded
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
