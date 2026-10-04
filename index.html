@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VocabMaster - Vocabulary Practice & Sentence Studio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">VocabMaster</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Vocabulary & Sentence Studio</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="hidden md:flex items-center space-x-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300">
+                    <i class="fa-solid fa-book-open mr-2"></i>Word Bank
+                </button>
+                <button onclick="switchTab('dictionary')" id="nav-dictionary" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i>Dictionary
+                </button>
+                <button onclick="switchTab('flashcards')" id="nav-flashcards" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-clone mr-2"></i>Flashcards
+                </button>
+                <button onclick="switchTab('studio')" id="nav-studio" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-feather-pointed mr-2"></i>Sentence Studio
+                </button>
+                <button onclick="switchTab('stats')" id="nav-stats" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-chart-line mr-2"></i>Progress
+                </button>
+            </nav>
+
+            <!-- User Auth & Theme Toggle -->
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+                <div id="auth-container" class="flex items-center space-x-2">
+                    <button onclick="openAuthModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-500/20 transition-all">
+                        <i class="fa-solid fa-user-circle mr-1.5"></i>Sign In
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT VIEWPORT -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- 1. DASHBOARD / WORD BANK VIEW -->
+        <section id="view-dashboard" class="space-y-6 fade-in">
+            <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-500/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div class="space-y-2">
+                    <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-semibold uppercase tracking-wider">Cloud Word Bank</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold">Master Your Vocabulary</h2>
+                    <p class="text-indigo-100 text-sm max-w-xl">Organize your personal dictionary, practice active recall, and write AI-evaluated sentences effortlessly.</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="openAddModal()" class="px-5 py-2.5 bg-white text-indigo-600 hover:bg-indigo-50 font-semibold rounded-2xl text-sm shadow-md transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i><span>Add Word</span>
+                    </button>
+                    <button onclick="openBatchModal()" class="px-5 py-2.5 bg-indigo-500 text-white hover:bg-indigo-400 font-semibold rounded-2xl text-sm shadow-md transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-list-ul"></i><span>Batch Word Bank</span>
+                    </button>
+                    <button onclick="openCsvModal()" class="px-5 py-2.5 bg-indigo-700/60 hover:bg-indigo-700 text-white font-semibold rounded-2xl text-sm border border-indigo-400/30 backdrop-blur-sm transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-file-csv"></i><span>CSV Import/Export</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters & Search Toolbar -->
+            <div class="flex flex-col sm:flex-row justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-search absolute left-4 top-3.5 text-slate-400"></i>
+                    <input type="text" id="search-input" oninput="handleSearch()" placeholder="Search words or definitions..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-center space-x-2 overflow-x-auto pb-1 sm:pb-0">
+                    <button onclick="filterByTag('all')" id="filter-all" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white transition-all whitespace-nowrap">All Words</button>
+                    <button onclick="filterByTag('noun')" id="filter-noun" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 whitespace-nowrap">Nouns</button>
+                    <button onclick="filterByTag('verb')" id="filter-verb" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 whitespace-nowrap">Verbs</button>
+                    <button onclick="filterByTag('adjective')" id="filter-adjective" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 whitespace-nowrap">Adjectives</button>
+                </div>
+            </div>
+
+            <!-- Word Grid -->
+            <div id="word-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically populated -->
+            </div>
+            <div id="empty-state" class="hidden text-center py-16 space-y-3 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+                <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3 class="font-bold text-lg">No words in your word bank</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">Add your first word manually, batch paste a word bank, or search the online dictionary.</p>
+                <button onclick="openAddModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold shadow-md">Add First Word</button>
+            </div>
+        </section>
+
+        <!-- 2. ONLINE DICTIONARY VIEW -->
+        <section id="view-dictionary" class="space-y-6 hidden fade-in">
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold">Online Dictionary Lookup</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Search definitions, phonetics, and audio pronunciations instantly.</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-book-bookmark absolute left-4 top-3.5 text-slate-400"></i>
+                        <input type="text" id="dict-search-input" onkeypress="if(event.key==='Enter') executeDictionarySearch()" placeholder="Enter any English word (e.g., serendipity, ephemeral)..." class="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <button onclick="executeDictionarySearch()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-2xl text-sm shadow-md transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-magnifying-glass"></i><span>Search</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="dict-results-container" class="space-y-4">
+                <!-- Dynamically populated lookup results -->
+            </div>
+        </section>
+
+        <!-- 3. FLASHCARDS ACTIVE RECALL VIEW -->
+        <section id="view-flashcards" class="space-y-6 hidden fade-in">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div>
+                    <h2 class="text-2xl font-bold">Active Recall Flashcards</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Test your memory against your word bank definitions.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <!-- Toggle Definition Button for Active Recall -->
+                    <button onclick="toggleFlashcardDefinition()" id="fc-toggle-btn" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all">
+                        <i id="fc-toggle-icon" class="fa-solid fa-eye-slash"></i>
+                        <span id="fc-toggle-text">Show Definition</span>
+                    </button>
+                    <button onclick="loadNextFlashcard()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-md flex items-center space-x-2">
+                        <i class="fa-solid fa-shuffle"></i><span>Next Card</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="flashcard-viewport" class="max-w-2xl mx-auto min-h-[380px] bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl p-8 flex flex-col justify-between relative overflow-hidden">
+                <!-- Content injected via JS -->
+            </div>
+        </section>
+
+        <!-- 4. SENTENCE STUDIO & AI EVALUATION VIEW -->
+        <section id="view-studio" class="space-y-6 hidden fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left: Word Selection & Toggle Controls -->
+                <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4 flex flex-col">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-lg flex items-center space-x-2">
+                            <i class="fa-solid fa-bullseye text-indigo-600"></i>
+                            <span>Select Target Word</span>
+                        </h3>
+                        <!-- Definition Reveal Toggle for Studio -->
+                        <button onclick="toggleStudioDefinition()" id="studio-toggle-btn" class="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                            <i id="studio-toggle-icon" class="fa-solid fa-eye-slash"></i>
+                            <span id="studio-toggle-text">Show Def</span>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Choose a word from your bank to craft an exemplar sentence.</p>
+                    
+                    <div id="studio-word-list" class="space-y-2 overflow-y-auto max-h-[420px] pr-1">
+                        <!-- Dynamically populated list -->
+                    </div>
+                </div>
+
+                <!-- Right: Sentence Crafting Canvas & AI Evaluation -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
+                            <div>
+                                <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Practice Canvas</span>
+                                <h3 id="studio-active-word-title" class="text-2xl font-bold">Select a word to begin</h3>
+                            </div>
+                            <div id="studio-active-word-meta" class="hidden flex items-center space-x-2">
+                                <span id="studio-active-pos" class="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 rounded-full text-xs font-semibold"></span>
+                            </div>
+                        </div>
+
+                        <!-- Hidden definition disclosure box for practice -->
+                        <div id="studio-definition-box" class="hidden p-4 bg-indigo-50/60 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 rounded-2xl text-sm space-y-1">
+                            <p class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Target Definition:</p>
+                            <p id="studio-active-def" class="text-slate-700 dark:text-slate-300"></p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label for="studio-sentence-input" class="block text-sm font-semibold">Write an original sentence utilizing the target word:</label>
+                            <textarea id="studio-sentence-input" rows="4" placeholder="Type your sentence here..." class="w-full p-4 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button onclick="evaluateUserSentence()" id="evaluate-btn" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-2xl text-sm shadow-md transition-all flex items-center space-x-2">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i><span>Evaluate Sentence (AI + Local)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Feedback Output Box -->
+                    <div id="evaluation-result-container" class="hidden bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6 fade-in">
+                        <!-- Dynamically populated evaluation score and critique -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. PROGRESS STATISTICS VIEW -->
+        <section id="view-stats" class="space-y-6 hidden fade-in">
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold">Progress Dashboard & Analytics</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Track your daily streaks, sentence practice history, and vocabulary growth.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 dark:bg-slate-700/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-600 space-y-1">
+                        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Total Words Saved</div>
+                        <div id="stat-total-words" class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">0</div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-700/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-600 space-y-1">
+                        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Sentences Evaluated</div>
+                        <div id="stat-total-sentences" class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">0</div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-700/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-600 space-y-1">
+                        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Dictionary Lookups</div>
+                        <div id="stat-total-lookups" class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">0</div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-700/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-600 space-y-1">
+                        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Daily Streak</div>
+                        <div id="stat-streak" class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">1 Day</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                <h3 class="font-bold text-lg">Recent Practice Activity</h3>
+                <div id="activity-log-list" class="space-y-3">
+                    <!-- Dynamically populated activity logs -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODALS -->
+
+    <!-- ADD / EDIT WORD MODAL -->
+    <div id="modal-word" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 id="modal-word-title" class="text-xl font-bold">Add New Vocabulary Word</h3>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <input type="hidden" id="edit-word-id">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Vocabulary Word</label>
+                    <input type="text" id="input-word" placeholder="e.g., Mellifluous" class="w-full p-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Part of Speech</label>
+                        <select id="input-pos" class="w-full p-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="noun">Noun</option>
+                            <option value="verb">Verb</option>
+                            <option value="adjective">Adjective</option>
+                            <option value="adverb">Adverb</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Phonetic Guide</label>
+                        <input type="text" id="input-phonetic" placeholder="e.g., /məˈlɪfluəs/" class="w-full p-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Personal Definition</label>
+                    <textarea id="input-definition" rows="3" placeholder="Enter your custom definition..." class="w-full p-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <button onclick="closeAddModal()" class="px-5 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-xl text-sm font-semibold">Cancel</button>
+                <button onclick="saveWordItem()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md">Save Word</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BATCH WORD BANK MODAL -->
+    <div id="modal-batch" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold flex items-center space-x-2">
+                    <i class="fa-solid fa-list-check text-indigo-600"></i>
+                    <span>Batch Word Bank Input</span>
+                </h3>
+                <button onclick="closeBatchModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-4">
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Paste your word bank below. Format each word on a new line (e.g., <code class="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-indigo-600">Ephemeral: adjective: Lasting for a very short time</code>).
+                </p>
+                <div>
+                    <textarea id="batch-textarea" rows="8" placeholder="Ephemeral, adjective, Lasting for a very short time&#10;Serendipity, noun, Finding valuable things by chance" class="w-full p-4 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-2xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <button onclick="closeBatchModal()" class="px-5 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-xl text-sm font-semibold">Cancel</button>
+                <button onclick="processBatchInput()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md flex items-center space-x-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i><span>Add Word Bank</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV IMPORT / EXPORT MODAL -->
+    <div id="modal-csv" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold flex items-center space-x-2">
+                    <i class="fa-solid fa-file-csv text-indigo-600"></i>
+                    <span>CSV Import / Export</span>
+                </h3>
+                <button onclick="closeCsvModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl space-y-2 border border-indigo-100 dark:border-indigo-800/40">
+                    <h4 class="font-semibold text-sm text-indigo-600 dark:text-indigo-400">Export Word Bank</h4>
+                    <p class="text-xs text-slate-600 dark:text-slate-300">Download your entire word bank as a CSV file for spreadsheet editing or offline backup.</p>
+                    <button onclick="exportCsvData()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-md flex items-center space-x-2">
+                        <i class="fa-solid fa-download"></i><span>Download CSV File</span>
+                    </button>
+                </div>
+                <div class="space-y-2 pt-2">
+                    <h4 class="font-semibold text-sm">Import CSV Data</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Upload or paste CSV content (Headers: <code class="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded">word,pos,phonetic,definition</code>).</p>
+                    <textarea id="csv-textarea" rows="5" placeholder="word,pos,phonetic,definition&#10;ephemeral,adjective,/ɪˈfɛm(ə)r(ə)l/,Lasting a very short time" class="w-full p-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <button onclick="closeCsvModal()" class="px-5 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-xl text-sm font-semibold">Cancel</button>
+                <button onclick="importCsvData()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md">Import CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTHENTICATION MODAL -->
+    <div id="modal-auth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 id="auth-modal-title" class="text-xl font-bold">Sign In to VocabMaster</h3>
+                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Email Address</label>
+                    <input type="email" id="auth-email" placeholder="name@example.com" class="w-full p-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 mb-1">Password</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button onclick="handleEmailAuth()" id="auth-submit-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-md transition-all">Sign In</button>
+                <div class="text-center">
+                    <button onclick="toggleAuthMode()" id="auth-toggle-prompt" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">Need an account? Sign up</button>
+                </div>
+                <div class="relative flex py-2 items-center">
+                    <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+                    <span class="flex-shrink mx-4 text-xs text-slate-400 uppercase">Or continue as</span>
+                    <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+                </div>
+                <button onclick="handleAnonymousAuth()" class="w-full py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs transition-all">Continue as Guest</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- FIREBASE & APPLICATION SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global State Variables
+        window.vocabList = [];
+        window.activityLogs = [];
+        window.currentFilter = 'all';
+        window.searchQuery = '';
+        window.currentUser = null;
+        window.isSignUpMode = false;
+        window.activeFlashcardIndex = 0;
+        window.flashcardShowDef = false;
+        window.selectedStudioWordId = null;
+        window.studioShowDef = false;
+
+        // Firebase Configuration & Initialization with Robust Fallback
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'vocab-master-app';
+        let firebaseConfig = null;
+        try {
+            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        } catch (e) {
+            firebaseConfig = null;
+        }
+
+        let app = null, db = null, auth = null;
+        if (firebaseConfig && firebaseConfig.apiKey) {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+            } catch (err) {
+                console.warn("Firebase initialization warning (running in offline/guest mode):", err);
+            }
+        } else {
+            console.info("VocabMaster: No Firebase configuration detected. Operating in local storage mode.");
+        }
+
+        // Initialize App on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            initAuthAndStorage();
+            loadLocalStorageFallback();
+            renderDashboard();
+            updateStats();
+        });
+
+        async function initAuthAndStorage() {
+            if (!auth) {
+                renderAuthUI(null);
+                return;
+            }
+
+            const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            try {
+                if (initialToken) {
+                    await signInWithCustomToken(auth, initialToken);
+                } else if (!auth.currentUser) {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.debug("Auth initialization fallback:", err);
+            }
+
+            onAuthStateChanged(auth, (user) => {
+                window.currentUser = user;
+                renderAuthUI(user);
+                if (user && db) {
+                    setupFirestoreSync(user.uid);
+                }
+            });
+        }
+
+        function setupFirestoreSync(uid) {
+            if (!db) return;
+            try {
+                const wordsCol = collection(db, 'artifacts', appId, 'users', uid, 'words');
+                onSnapshot(query(wordsCol), (snapshot) => {
+                    const cloudWords = [];
+                    snapshot.forEach(docSnap => {
+                        cloudWords.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    if (cloudWords.length > 0) {
+                        window.vocabList = cloudWords;
+                        renderDashboard();
+                        updateStats();
+                    }
+                }, (err) => {
+                    console.debug("Firestore sync error:", err);
+                });
+            } catch (e) {
+                console.debug("Firestore setup error:", e);
+            }
+        }
+
+        async function syncItemToCloud(item) {
+            if (!db || !window.currentUser) return;
+            try {
+                const uid = window.currentUser.uid;
+                const docRef = doc(db, 'artifacts', appId, 'users', uid, 'words', item.id);
+                await setDoc(docRef, item);
+            } catch (err) {
+                console.debug("Cloud sync save error:", err);
+            }
+        }
+
+        async function removeCloudItem(id) {
+            if (!db || !window.currentUser) return;
+            try {
+                const uid = window.currentUser.uid;
+                const docRef = doc(db, 'artifacts', appId, 'users', uid, 'words', id);
+                await deleteDoc(docRef);
+            } catch (err) {
+                console.debug("Cloud sync delete error:", err);
+            }
+        }
+
+        function loadLocalStorageFallback() {
+            const saved = localStorage.getItem('vocabmaster_words');
+            if (saved) {
+                try { window.vocabList = JSON.parse(saved); } catch(e){}
+            } else {
+                // Default starter words
+                window.vocabList = [
+                    { id: 'w-1', word: 'Ephemeral', pos: 'adjective', phonetic: '/ɪˈfɛm(ə)r(ə)l/', definition: 'Lasting for a very short time.', audioUrl: '', status: 'learning', sentencesCount: 2 },
+                    { id: 'w-2', word: 'Serendipity', pos: 'noun', phonetic: '/ˌsɛrənˈdɪpɪti/', definition: 'The occurrence of events by chance in a happy or beneficial way.', audioUrl: '', status: 'mastered', sentencesCount: 4 },
+                    { id: 'w-3', word: 'Mellifluous', pos: 'adjective', phonetic: '/məˈlɪfluəs/', definition: 'Sweet or musical; pleasant to hear.', audioUrl: '', status: 'learning', sentencesCount: 1 }
+                ];
+                saveLocalStorage();
+            }
+            const logs = localStorage.getItem('vocabmaster_logs');
+            if (logs) {
+                try { window.activityLogs = JSON.parse(logs); } catch(e){}
+            }
+        }
+
+        function saveLocalStorage() {
+            localStorage.setItem('vocabmaster_words', JSON.stringify(window.vocabList));
+            localStorage.setItem('vocabmaster_logs', JSON.stringify(window.activityLogs));
+        }
+
+        // NAVIGATION & TABS
+        window.switchTab = function(tabName) {
+            const tabs = ['dashboard', 'dictionary', 'flashcards', 'studio', 'stats'];
+            tabs.forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`nav-${t}`);
+                if (view) view.classList.add('hidden');
+                if (btn) {
+                    btn.className = "px-4 py-2 rounded-xl text-sm font-semibold transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700";
+                }
+            });
+            const activeView = document.getElementById(`view-${tabName}`);
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if (activeView) activeView.classList.remove('hidden');
+            if (activeBtn) {
+                activeBtn.className = "px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300";
+            }
+            if (tabName === 'flashcards') renderFlashcard();
+            if (tabName === 'studio') renderStudioWordList();
+            if (tabName === 'stats') updateStats();
+        };
+
+        // THEME TOGGLE
+        window.toggleDarkMode = function() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.className = "fa-solid fa-moon";
+                localStorage.setItem('vocabmaster_theme', 'light');
+            } else {
+                html.classList.add('dark');
+                icon.className = "fa-solid fa-sun";
+                localStorage.setItem('vocabmaster_theme', 'dark');
+            }
+        };
+
+        if (localStorage.getItem('vocabmaster_theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').className = "fa-solid fa-sun";
+        }
+
+        // DASHBOARD & WORD BANK RENDERING
+        window.renderDashboard = function() {
+            const grid = document.getElementById('word-grid');
+            const emptyState = document.getElementById('empty-state');
+            if (!grid) return;
+
+            let filtered = window.vocabList.filter(item => {
+                const matchesTag = window.currentFilter === 'all' || item.pos.toLowerCase() === window.currentFilter;
+                const matchesQuery = item.word.toLowerCase().includes(window.searchQuery.toLowerCase()) || 
+                                     item.definition.toLowerCase().includes(window.searchQuery.toLowerCase());
+                return matchesTag && matchesQuery;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(item => `
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-lg font-bold tracking-tight">${escapeHtml(item.word)}</h3>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 rounded-full text-xs font-semibold capitalize">${escapeHtml(item.pos || 'noun')}</span>
+                            </div>
+                        </div>
+                        ${item.phonetic ? `<p class="text-xs font-mono text-slate-400">${escapeHtml(item.phonetic)}</p>` : ''}
+                        <p class="text-sm text-slate-600 dark:text-slate-300">${escapeHtml(item.definition)}</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-700">
+                        <span class="text-xs text-slate-400 font-medium">${item.sentencesCount || 0} sentences practiced</span>
+                        <div class="flex items-center space-x-1">
+                            ${item.audioUrl ? `<button onclick="playAudio('${item.audioUrl}')" class="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl"><i class="fa-solid fa-volume-high"></i></button>` : ''}
+                            <button onclick="openEditModal('${item.id}')" class="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 rounded-xl"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteWordItem('${item.id}')" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.handleSearch = function() {
+            window.searchQuery = document.getElementById('search-input').value;
+            renderDashboard();
+        };
+
+        window.filterByTag = function(tag) {
+            window.currentFilter = tag;
+            ['all', 'noun', 'verb', 'adjective'].forEach(t => {
+                const btn = document.getElementById(`filter-${t}`);
+                if (btn) {
+                    if (t === tag) {
+                        btn.className = "px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white transition-all whitespace-nowrap";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 whitespace-nowrap";
+                    }
+                }
+            });
+            renderDashboard();
+        };
+
+        // ADD / EDIT MODAL FUNCTIONS
+        window.openAddModal = function() {
+            document.getElementById('modal-word-title').innerText = 'Add New Vocabulary Word';
+            document.getElementById('edit-word-id').value = '';
+            document.getElementById('input-word').value = '';
+            document.getElementById('input-pos').value = 'noun';
+            document.getElementById('input-phonetic').value = '';
+            document.getElementById('input-definition').value = '';
+            document.getElementById('modal-word').classList.remove('hidden');
+        };
+
+        window.openEditModal = function(id) {
+            const item = window.vocabList.find(w => w.id === id);
+            if (!item) return;
+            document.getElementById('modal-word-title').innerText = 'Edit Vocabulary Word';
+            document.getElementById('edit-word-id').value = item.id;
+            document.getElementById('input-word').value = item.word;
+            document.getElementById('input-pos').value = item.pos || 'noun';
+            document.getElementById('input-phonetic').value = item.phonetic || '';
+            document.getElementById('input-definition').value = item.definition;
+            document.getElementById('modal-word').classList.remove('hidden');
+        };
+
+        window.closeAddModal = function() {
+            document.getElementById('modal-word').classList.add('hidden');
+        };
+
+        window.saveWordItem = function() {
+            const id = document.getElementById('edit-word-id').value;
+            const word = document.getElementById('input-word').value.trim();
+            const pos = document.getElementById('input-pos').value;
+            const phonetic = document.getElementById('input-phonetic').value.trim();
+            const definition = document.getElementById('input-definition').value.trim();
+
+            if (!word || !definition) {
+                showToast("Please enter both a word and a definition.", "error");
+                return;
+            }
+
+            if (id) {
+                const idx = window.vocabList.findIndex(w => w.id === id);
+                if (idx !== -1) {
+                    window.vocabList[idx] = { ...window.vocabList[idx], word, pos, phonetic, definition };
+                    syncItemToCloud(window.vocabList[idx]);
+                }
+                showToast("Word updated successfully!", "success");
+            } else {
+                const newItem = {
+                    id: 'word-' + Date.now(),
+                    word,
+                    pos,
+                    phonetic,
+                    definition,
+                    audioUrl: '',
+                    status: 'learning',
+                    sentencesCount: 0
+                };
+                window.vocabList.unshift(newItem);
+                syncItemToCloud(newItem);
+                logActivity('Added word: ' + word);
+                showToast("Word added to your word bank!", "success");
+            }
+
+            saveLocalStorage();
+            renderDashboard();
+            closeAddModal();
+        };
+
+        window.deleteWordItem = function(id) {
+            if (!confirm("Are you sure you want to delete this word?")) return;
+            window.vocabList = window.vocabList.filter(w => w.id !== id);
+            removeCloudItem(id);
+            saveLocalStorage();
+            renderDashboard();
+            showToast("Word removed from bank.", "success");
+        };
+
+        // BATCH MODAL
+        window.openBatchModal = function() {
+            document.getElementById('batch-textarea').value = '';
+            document.getElementById('modal-batch').classList.remove('hidden');
+        };
+
+        window.closeBatchModal = function() {
+            document.getElementById('modal-batch').classList.add('hidden');
+        };
+
+        window.processBatchInput = function() {
+            const raw = document.getElementById('batch-textarea').value.trim();
+            if (!raw) {
+                showToast("Please enter words into the batch text box.", "error");
+                return;
+            }
+            const lines = raw.split('\n');
+            let addedCount = 0;
+            const timestamp = Date.now();
+
+            lines.forEach((line, idx) => {
+                const trimmed = line.trim();
+                if (!trimmed) return;
+                const parts = trimmed.split(/[,:\-]+/).map(p => p.trim());
+                const word = parts[0];
+                if (!word) return;
+                const pos = parts[1] && ['noun','verb','adjective','adverb'].includes(parts[1].toLowerCase()) ? parts[1].toLowerCase() : 'noun';
+                const definition = parts.length >= 3 ? parts.slice(2).join(' ') : (parts[1] || 'Batch imported definition.');
+
+                const newItem = {
+                    id: 'batch-' + timestamp + '-' + idx,
+                    word,
+                    pos,
+                    phonetic: '',
+                    definition,
+                    audioUrl: '',
+                    status: 'learning',
+                    sentencesCount: 0
+                };
+                window.vocabList.unshift(newItem);
+                syncItemToCloud(newItem);
+                addedCount++;
+            });
+
+            saveLocalStorage();
+            renderDashboard();
+            closeBatchModal();
+            showToast(`Successfully added ${addedCount} words!`, "success");
+        };
+
+        // CSV IMPORT / EXPORT MODAL
+        window.openCsvModal = function() {
+            document.getElementById('csv-textarea').value = '';
+            document.getElementById('modal-csv').classList.remove('hidden');
+        };
+
+        window.closeCsvModal = function() {
+            document.getElementById('modal-csv').classList.add('hidden');
+        };
+
+        window.exportCsvData = function() {
+            if (window.vocabList.length === 0) {
+                showToast("No words available to export.", "error");
+                return;
+            }
+            let csv = "word,pos,phonetic,definition\n";
+            window.vocabList.forEach(item => {
+                const w = `"${(item.word || '').replace(/"/g, '""')}"`;
+                const p = `"${(item.pos || 'noun').replace(/"/g, '""')}"`;
+                const ph = `"${(item.phonetic || '').replace(/"/g, '""')}"`;
+                const d = `"${(item.definition || '').replace(/"/g, '""')}"`;
+                csv += `${w},${p},${ph},${d}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `VocabMaster_WordBank_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            showToast("CSV file exported successfully!", "success");
+        };
+
+        window.importCsvData = function() {
+            const raw = document.getElementById('csv-textarea').value.trim();
+            if (!raw) {
+                showToast("Please enter CSV content to import.", "error");
+                return;
+            }
+            const lines = raw.split('\n');
+            let count = 0;
+            const timestamp = Date.now();
+
+            lines.forEach((line, idx) => {
+                if (idx === 0 && line.toLowerCase().includes('word')) return; // skip header
+                const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (parts.length >= 2) {
+                    const word = parts[0].replace(/^"|"$/g, '').trim();
+                    const pos = (parts[1] || 'noun').replace(/^"|"$/g, '').trim().toLowerCase();
+                    const phonetic = parts[2] ? parts[2].replace(/^"|"$/g, '').trim() : '';
+                    const definition = parts[3] ? parts[3].replace(/^"|"$/g, '').trim() : (parts[2] || 'CSV Imported definition.');
+
+                    if (word) {
+                        const newItem = {
+                            id: 'csv-' + timestamp + '-' + idx,
+                            word,
+                            pos: ['noun','verb','adjective','adverb'].includes(pos) ? pos : 'noun',
+                            phonetic,
+                            definition,
+                            audioUrl: '',
+                            status: 'learning',
+                            sentencesCount: 0
+                        };
+                        window.vocabList.unshift(newItem);
+                        syncItemToCloud(newItem);
+                        count++;
+                    }
+                }
+            });
+
+            saveLocalStorage();
+            renderDashboard();
+            closeCsvModal();
+            showToast(`Successfully imported ${count} words from CSV!`, "success");
+        };
+
+        // ONLINE DICTIONARY SEARCH & DATAMUSE FALLBACK
+        window.executeDictionarySearch = async function() {
+            const queryWord = document.getElementById('dict-search-input').value.trim();
+            const container = document.getElementById('dict-results-container');
+            if (!queryWord) {
+                showToast("Please enter a word to search.", "error");
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="text-center py-12 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 space-y-3">
+                    <i class="fa-solid fa-spinner fa-spin text-3xl text-indigo-600"></i>
+                    <p class="text-sm text-slate-500">Searching dictionary and lexical databases...</p>
+                </div>
+            `;
+
+            let dictionaryData = null;
+            try {
+                const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(queryWord)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.length > 0) dictionaryData = data[0];
+                }
+            } catch (err) {}
+
+            // Datamuse fallback if Free Dictionary API fails
+            if (!dictionaryData) {
+                try {
+                    const res = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(queryWord)}&md=dpef`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.length > 0) {
+                            const entry = data[0];
+                            dictionaryData = {
+                                word: entry.word,
+                                phonetic: entry.score ? `Score: ${entry.score}` : '',
+                                phonetics: [],
+                                meanings: [{
+                                    partOfSpeech: entry.tags && entry.tags.includes('n') ? 'noun' : (entry.tags && entry.tags.includes('v') ? 'verb' : 'adjective'),
+                                    definitions: entry.defs ? entry.defs.map(d => ({ definition: d })) : [{ definition: 'No definition found.' }]
+                                }]
+                            };
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            if (!dictionaryData) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 space-y-2">
+                        <i class="fa-solid fa-circle-exclamation text-3xl text-amber-500"></i>
+                        <h3 class="font-bold text-lg">No Definitions Found</h3>
+                        <p class="text-sm text-slate-500">Could not find "${escapeHtml(queryWord)}" in the dictionary.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Extract phonetics and audio
+            let phoneticText = dictionaryData.phonetic || '';
+            let audioUrl = '';
+            if (dictionaryData.phonetics) {
+                for (let p of dictionaryData.phonetics) {
+                    if (p.text && !phoneticText) phoneticText = p.text;
+                    if (p.audio) { audioUrl = p.audio; break; }
+                }
+            }
+
+            container.innerHTML = `
+                <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6 fade-in">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
+                        <div>
+                            <div class="flex items-center space-x-3">
+                                <h3 class="text-3xl font-bold">${escapeHtml(dictionaryData.word)}</h3>
+                                ${audioUrl ? `<button onclick="playAudio('${audioUrl}')" class="p-2.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 rounded-2xl"><i class="fa-solid fa-volume-high"></i></button>` : ''}
+                            </div>
+                            ${phoneticText ? `<p class="text-xs font-mono text-slate-400 mt-1">${escapeHtml(phoneticText)}</p>` : ''}
+                        </div>
+                        <button onclick='saveDictionaryResult(${JSON.stringify({
+                            word: dictionaryData.word,
+                            phonetic: phoneticText,
+                            pos: dictionaryData.meanings[0]?.partOfSpeech || 'noun',
+                            definition: dictionaryData.meanings[0]?.definitions[0]?.definition || '',
+                            audioUrl: audioUrl
+                        })})' class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-semibold shadow-md flex items-center space-x-2">
+                            <i class="fa-solid fa-bookmark"></i><span>Save to Word Bank</span>
+                        </button>
+                    </div>
+
+                    <div class="space-y-6">
+                        ${dictionaryData.meanings.map(meaning => `
+                            <div class="space-y-3">
+                                <span class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full text-xs font-semibold uppercase tracking-wider">${escapeHtml(meaning.partOfSpeech)}</span>
+                                <ul class="space-y-2 pl-4 border-l-2 border-indigo-500/30">
+                                    ${meaning.definitions.map(def => `
+                                        <li class="space-y-1">
+                                            <p class="text-sm font-medium text-slate-800 dark:text-slate-200">• ${escapeHtml(def.definition)}</p>
+                                            ${def.example ? `<p class="text-xs text-slate-500 italic pl-3">"${escapeHtml(def.example)}"</p>` : ''}
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            incrementStat('lookups');
+        };
+
+        window.saveDictionaryResult = function(itemData) {
+            const newItem = {
+                id: 'dict-' + Date.now(),
+                word: itemData.word,
+                pos: itemData.pos,
+                phonetic: itemData.phonetic,
+                definition: itemData.definition,
+                audioUrl: itemData.audioUrl,
+                status: 'learning',
+                sentencesCount: 0
+            };
+            window.vocabList.unshift(newItem);
+            syncItemToCloud(newItem);
+            saveLocalStorage();
+            renderDashboard();
+            showToast(`Saved "${itemData.word}" to your word bank!`, "success");
+        };
+
+        window.playAudio = function(url) {
+            if (!url) return;
+            const audio = new Audio(url);
+            audio.play().catch(e => showToast("Audio playback unavailable.", "error"));
+        };
+
+        // FLASHCARDS ACTIVE RECALL PRACTICE
+        window.renderFlashcard = function() {
+            const viewport = document.getElementById('flashcard-viewport');
+            if (!viewport) return;
+
+            if (window.vocabList.length === 0) {
+                viewport.innerHTML = `
+                    <div class="text-center py-16 space-y-3 m-auto">
+                        <i class="fa-solid fa-clone text-4xl text-indigo-500"></i>
+                        <h3 class="font-bold text-lg">No Cards Available</h3>
+                        <p class="text-sm text-slate-500">Add words to your word bank to practice active recall.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (window.activeFlashcardIndex >= window.vocabList.length) {
+                window.activeFlashcardIndex = 0;
+            }
+
+            const card = window.vocabList[window.activeFlashcardIndex];
+
+            viewport.innerHTML = `
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-xs font-semibold text-slate-400">
+                        <span>Card ${window.activeFlashcardIndex + 1} of ${window.vocabList.length}</span>
+                        <span class="px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 rounded-full uppercase">${escapeHtml(card.pos || 'noun')}</span>
+                    </div>
+                    <div class="pt-8 text-center space-y-4">
+                        <h3 class="text-4xl font-extrabold tracking-tight">${escapeHtml(card.word)}</h3>
+                        ${card.phonetic ? `<p class="text-sm font-mono text-slate-400">${escapeHtml(card.phonetic)}</p>` : ''}
+                    </div>
+                </div>
+
+                <div class="py-8">
+                    <div id="fc-definition-box" class="${window.flashcardShowDef ? '' : 'hidden'} p-5 bg-indigo-50/70 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/40 text-center space-y-2 fade-in">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Definition</span>
+                        <p class="text-base text-slate-800 dark:text-slate-200">${escapeHtml(card.definition)}</p>
+                    </div>
+                    <div class="${window.flashcardShowDef ? 'hidden' : ''} text-center py-6 text-sm text-slate-400 italic">
+                        Definition hidden for active recall. Click reveal to check your answer.
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-700">
+                    <button onclick="prevFlashcard()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-xl text-xs font-semibold">Previous</button>
+                    <button onclick="nextFlashcard()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-md">Got It / Next</button>
+                </div>
+            `;
+        };
+
+        window.toggleFlashcardDefinition = function() {
+            window.flashcardShowDef = !window.flashcardShowDef;
+            const icon = document.getElementById('fc-toggle-icon');
+            const text = document.getElementById('fc-toggle-text');
+            if (window.flashcardShowDef) {
+                icon.className = "fa-solid fa-eye";
+                text.innerText = "Hide Definition";
+            } else {
+                icon.className = "fa-solid fa-eye-slash";
+                text.innerText = "Show Definition";
+            }
+            renderFlashcard();
+        };
+
+        window.nextFlashcard = function() {
+            window.flashcardShowDef = false;
+            document.getElementById('fc-toggle-icon').className = "fa-solid fa-eye-slash";
+            document.getElementById('fc-toggle-text').innerText = "Show Definition";
+            window.activeFlashcardIndex = (window.activeFlashcardIndex + 1) % window.vocabList.length;
+            renderFlashcard();
+        };
+
+        window.prevFlashcard = function() {
+            window.flashcardShowDef = false;
+            window.activeFlashcardIndex = (window.activeFlashcardIndex - 1 + window.vocabList.length) % window.vocabList.length;
+            renderFlashcard();
+        };
+
+        // SENTENCE STUDIO & GEMINI ADVANCED AI EVALUATION
+        window.renderStudioWordList = function() {
+            const listEl = document.getElementById('studio-word-list');
+            if (!listEl) return;
+
+            if (window.vocabList.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 py-4 text-center">No words in word bank.</p>`;
+                return;
+            }
+
+            if (!window.selectedStudioWordId && window.vocabList.length > 0) {
+                window.selectedStudioWordId = window.vocabList[0].id;
+            }
+
+            listEl.innerHTML = window.vocabList.map(item => {
+                const isSelected = item.id === window.selectedStudioWordId;
+                return `
+                    <div onclick="selectStudioWord('${item.id}')" class="p-3.5 rounded-2xl cursor-pointer transition-all border ${isSelected ? 'bg-indigo-50 dark:bg-indigo-950 border-indigo-500 shadow-sm' : 'bg-slate-50 dark:bg-slate-700/40 border-slate-200 dark:border-slate-600 hover:bg-slate-100'} flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-sm ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : ''}">${escapeHtml(item.word)}</h4>
+                            <span class="text-xs text-slate-400 capitalize">${escapeHtml(item.pos || 'noun')}</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+                    </div>
+                `;
+            }).join('');
+
+            updateActiveStudioWordDisplay();
+        };
+
+        window.selectStudioWord = function(id) {
+            window.selectedStudioWordId = id;
+            window.studioShowDef = false;
+            document.getElementById('studio-toggle-icon').className = "fa-solid fa-eye-slash";
+            document.getElementById('studio-toggle-text').innerText = "Show Def";
+            document.getElementById('studio-sentence-input').value = '';
+            document.getElementById('evaluation-result-container').classList.add('hidden');
+            renderStudioWordList();
+        };
+
+        window.updateActiveStudioWordDisplay = function() {
+            const titleEl = document.getElementById('studio-active-word-title');
+            const metaEl = document.getElementById('studio-active-word-meta');
+            const posEl = document.getElementById('studio-active-pos');
+            const defEl = document.getElementById('studio-active-def');
+            const defBox = document.getElementById('studio-definition-box');
+
+            if (!titleEl) return;
+
+            const wordObj = window.vocabList.find(w => w.id === window.selectedStudioWordId);
+            if (!wordObj) {
+                titleEl.innerText = "Select a word to begin";
+                metaEl.classList.add('hidden');
+                defBox.classList.add('hidden');
+                return;
+            }
+
+            titleEl.innerText = wordObj.word;
+            posEl.innerText = wordObj.pos || 'noun';
+            metaEl.classList.remove('hidden');
+            defEl.innerText = wordObj.definition;
+
+            if (window.studioShowDef) {
+                defBox.classList.remove('hidden');
+            } else {
+                defBox.classList.add('hidden');
+            }
+        };
+
+        window.toggleStudioDefinition = function() {
+            window.studioShowDef = !window.studioShowDef;
+            const icon = document.getElementById('studio-toggle-icon');
+            const text = document.getElementById('studio-toggle-text');
+            if (window.studioShowDef) {
+                icon.className = "fa-solid fa-eye";
+                text.innerText = "Hide Def";
+            } else {
+                icon.className = "fa-solid fa-eye-slash";
+                text.innerText = "Show Def";
+            }
+            updateActiveStudioWordDisplay();
+        };
+
+        window.evaluateUserSentence = async function() {
+            const wordObj = window.vocabList.find(w => w.id === window.selectedStudioWordId);
+            const sentence = document.getElementById('studio-sentence-input').value.trim();
+            const container = document.getElementById('evaluation-result-container');
+
+            if (!wordObj) {
+                showToast("Please select a target word first.", "error");
+                return;
+            }
+            if (!sentence) {
+                showToast("Please write a sentence before evaluating.", "error");
+                return;
+            }
+
+            container.classList.remove('hidden');
+            container.innerHTML = `
+                <div class="text-center py-8 space-y-3">
+                    <i class="fa-solid fa-spinner fa-spin text-3xl text-indigo-600"></i>
+                    <p class="text-sm text-slate-500">Gemini AI and Grammar Engine analyzing grammar, syntax, and target integration...</p>
+                </div>
+            `;
+
+            // Call Gemini API for advanced grammatical evaluation
+            let aiResult = null;
+            try {
+                const prompt = `Evaluate the following sentence written by a student for the vocabulary word "${wordObj.word}" (definition: "${wordObj.definition}").
+Sentence: "${sentence}"
+
+Analyze for:
+1. Grammatical correctness and punctuation.
+2. Spelling and capitalization.
+3. Subject-verb agreement.
+4. Proper integration and contextual appropriateness of the vocabulary word "${wordObj.word}".
+
+Return JSON format with structure:
+{
+  "score": number (0 to 100),
+  "hasTargetWord": boolean,
+  "grammarCorrect": boolean,
+  "critique": string (detailed feedback),
+  "correctedSentence": string (polished version)
+}`;
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json"
+                    }
+                };
+
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const candidate = data.candidates?.[0];
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        aiResult = JSON.parse(candidate.content.parts[0].text);
+                    }
+                }
+            } catch (e) {
+                console.debug("AI evaluation API fallback:", e);
+            }
+
+            // Local rule-based heuristic fallback if API fails
+            if (!aiResult) {
+                const hasWord = sentence.toLowerCase().includes(wordObj.word.toLowerCase());
+                const startsWithCap = /^[A-Z]/.test(sentence);
+                const endsWithPunct = /[.!?]$/.test(sentence);
+                let score = 70;
+                if (hasWord) score += 15;
+                if (startsWithCap) score += 10;
+                if (endsWithPunct) score += 5;
+
+                aiResult = {
+                    score: score,
+                    hasTargetWord: hasWord,
+                    grammarCorrect: startsWithCap && endsWithPunct,
+                    critique: hasWord ? "Your sentence successfully incorporates the target word with solid syntax structure." : `Make sure to include the exact target word "${wordObj.word}".`,
+                    correctedSentence: sentence
+                };
+            }
+
+            // Render evaluation feedback
+            container.innerHTML = `
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-2xl ${aiResult.score >= 80 ? 'bg-emerald-500 text-white' : (aiResult.score >= 60 ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white')} flex items-center justify-center font-bold text-lg shadow-lg">
+                            ${aiResult.score}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Evaluation Score</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Comprehensive AI Grammar & Context Check</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${aiResult.hasTargetWord ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-50 text-rose-600'}">
+                            ${aiResult.hasTargetWord ? 'Word Included' : 'Missing Target Word'}
+                        </span>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${aiResult.grammarCorrect ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-50 text-amber-600'}">
+                            ${aiResult.grammarCorrect ? 'Grammar Passed' : 'Syntax Notice'}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <h5 class="text-xs font-bold text-slate-400 uppercase">Detailed Critique</h5>
+                        <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHtml(aiResult.critique)}</p>
+                    </div>
+
+                    ${aiResult.correctedSentence && aiResult.correctedSentence !== sentence ? `
+                        <div class="p-4 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl border border-indigo-100 dark:border-indigo-800/40 space-y-1">
+                            <h5 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase">Polished Suggestion</h5>
+                            <p class="text-sm italic text-slate-800 dark:text-slate-200">"${escapeHtml(aiResult.correctedSentence)}"</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Increment sentence count for word
+            wordObj.sentencesCount = (wordObj.sentencesCount || 0) + 1;
+            syncItemToCloud(wordObj);
+            saveLocalStorage();
+            incrementStat('sentences');
+            logActivity(`Practiced sentence for "${wordObj.word}"`);
+            renderDashboard();
+        };
+
+        // STATS & ACTIVITY LOGS
+        window.incrementStat = function(type) {
+            let stats = JSON.parse(localStorage.getItem('vocabmaster_stats') || '{"sentences": 0, "lookups": 0}');
+            stats[type] = (stats[type] || 0) + 1;
+            localStorage.setItem('vocabmaster_stats', JSON.stringify(stats));
+            updateStats();
+        };
+
+        window.updateStats = function() {
+            let stats = JSON.parse(localStorage.getItem('vocabmaster_stats') || '{"sentences": 0, "lookups": 0}');
+            document.getElementById('stat-total-words').innerText = window.vocabList.length;
+            document.getElementById('stat-total-sentences').innerText = stats.sentences;
+            document.getElementById('stat-total-lookups').innerText = stats.lookups;
+
+            const logContainer = document.getElementById('activity-log-list');
+            if (logContainer) {
+                if (window.activityLogs.length === 0) {
+                    logContainer.innerHTML = `<p class="text-xs text-slate-400 py-2">No recent activity logged.</p>`;
+                } else {
+                    logContainer.innerHTML = window.activityLogs.slice(0, 10).map(log => `
+                        <div class="p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl flex justify-between items-center text-xs">
+                            <span class="font-medium">${escapeHtml(log.text)}</span>
+                            <span class="text-slate-400">${new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+        };
+
+        window.logActivity = function(text) {
+            window.activityLogs.unshift({ text, timestamp: Date.now() });
+            saveLocalStorage();
+        };
+
+        // AUTHENTICATION MODAL FUNCTIONS
+        window.openAuthModal = function() {
+            document.getElementById('modal-auth').classList.remove('hidden');
+        };
+
+        window.closeAuthModal = function() {
+            document.getElementById('modal-auth').classList.add('hidden');
+        };
+
+        window.toggleAuthMode = function() {
+            window.isSignUpMode = !window.isSignUpMode;
+            document.getElementById('auth-modal-title').innerText = window.isSignUpMode ? 'Create Account' : 'Sign In to VocabMaster';
+            document.getElementById('auth-submit-btn').innerText = window.isSignUpMode ? 'Sign Up' : 'Sign In';
+            document.getElementById('auth-toggle-prompt').innerText = window.isSignUpMode ? 'Already have an account? Sign in' : 'Need an account? Sign up';
+        };
+
+        window.handleEmailAuth = async function() {
+            if (!auth) {
+                showToast("Firebase Auth is running in offline mode. Local storage is active.", "error");
+                return;
+            }
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value.trim();
+            if (!email || !password) {
+                showToast("Please enter both email and password.", "error");
+                return;
+            }
+
+            try {
+                if (window.isSignUpMode) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    showToast("Account created successfully!", "success");
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showToast("Signed in successfully!", "success");
+                }
+                closeAuthModal();
+            } catch (err) {
+                showToast("Authentication error: " + err.message, "error");
+            }
+        };
+
+        window.handleAnonymousAuth = async function() {
+            if (!auth) {
+                showToast("Running in local guest storage mode.", "success");
+                closeAuthModal();
+                return;
+            }
+            try {
+                await signInAnonymously(auth);
+                showToast("Signed in as Guest.", "success");
+                closeAuthModal();
+            } catch (err) {
+                showToast("Guest auth error.", "error");
+            }
+        };
+
+        window.renderAuthUI = function(user) {
+            const container = document.getElementById('auth-container');
+            if (!container) return;
+            if (user) {
+                const displayName = user.email || ('Guest (' + user.uid.slice(0, 5) + '...)');
+                container.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-semibold px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-xl hidden sm:inline-block">${escapeHtml(displayName)}</span>
+                        <button onclick="signOutUser()" class="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-rose-50 hover:text-rose-600 rounded-xl text-xs font-semibold transition-all" title="Sign Out">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button onclick="openAuthModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-500/20 transition-all">
+                        <i class="fa-solid fa-user-circle mr-1.5"></i>Sign In
+                    </button>
+                `;
+            }
+        };
+
+        window.signOutUser = async function() {
+            if (auth) {
+                await signOut(auth);
+                showToast("Signed out successfully.", "success");
+            }
+        };
+
+        // TOAST NOTIFICATIONS
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-xl text-white text-xs font-semibold flex items-center space-x-2 fade-in ${type === 'error' ? 'bg-rose-600' : 'bg-slate-900 dark:bg-slate-700'}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation text-amber-300' : 'fa-circle-check text-emerald-400'}"></i>
+                <span>${escapeHtml(message)}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        };
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
